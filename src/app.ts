@@ -3,7 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';
 import routes from './routes';
-import { getPort } from './config';
+import { requireAccessKey } from './auth';
+import { getAccessKey, getPort } from './config';
 import logger from './utils/logger';
 
 const port = getPort();
@@ -13,9 +14,15 @@ const server = http.createServer(app);
 
 const corsOptions = {
   origin: '*',
+  allowedHeaders: ['Authorization', 'Content-Type'],
 };
 
 app.use(cors(corsOptions));
+
+if (getAccessKey()) {
+  app.all('*', requireAccessKey);
+}
+
 app.use(express.json());
 
 app.use('/api', routes);

@@ -1,7 +1,9 @@
 import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
 import { ChatOllama } from '@langchain/community/chat_models/ollama';
+import { VertexAI } from "@langchain/google-vertexai";
 import { OllamaEmbeddings } from '@langchain/community/embeddings/ollama';
 import { HuggingFaceTransformersEmbeddings } from './huggingfaceTransformer';
+import { hasGCPCredentials } from '../auth';
 import {
   getGroqApiKey,
   getOllamaApiEndpoint,
@@ -114,6 +116,23 @@ export const getAvailableChatModelProviders = async () => {
       }, {});
     } catch (err) {
       logger.error(`Error loading Ollama models: ${err}`);
+    }
+  }
+
+  if (await hasGCPCredentials()) {
+    try {
+      models['vertexai'] = {
+        'gemini-1.5-pro (preview-0409)': new VertexAI({
+          temperature: 0.7,
+          modelName: 'gemini-1.5-pro-preview-0409',
+        }),
+        'gemini-1.0-pro (Latest)': new VertexAI({
+          temperature: 0.7,
+          modelName: 'gemini-1.0-pro',
+        }),
+      };
+    } catch (err) {
+      logger.error(`Error loading VertexAI models: ${err}`);
     }
   }
 
